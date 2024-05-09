@@ -1,15 +1,12 @@
-from data_loader import normalized_stats
+from data_loader import x,y
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-def predict_xG_for():
 
-    x = normalized_stats[["Home?", "Days Rest", "Average xG For", "Average xG/D", "Rolling xG For", "Rolling xG/D", "Average G/D", "Salary", 
-                          "Opponent Average xG Against", "Opponent Average xG/D", "Opponent Rolling xG Against", "Opponent Rolling xG/D", 
-                          "Opponent Average G/D", "Opponent Salary"]]
-    y = normalized_stats["xG For"]
+def predict_xG_for(x,y):
     x, y = np.array(x), np.array(y)
 
     model = LinearRegression().fit(x,y)
@@ -25,7 +22,17 @@ def predict_xG_for():
     return x, y, model
 
 
+def corr_matrix(x):
+    corr_matrix = x.corr()
+    print(corr_matrix)
 
-predict_xG_for()
+
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm")
+    plt.show()
+    
+
+    
+
+
 
 

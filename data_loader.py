@@ -98,6 +98,29 @@ def calculate_normalized_stats(df, salary):
     return combined_stats
 
 
+#===========================FEATURE ENGINEERING===========================#
+def engineer_features(normalized_stats):
+    x = normalized_stats[["Home?", "Days Rest", "Average xG For", "Average xG/D", "Rolling xG For", "Rolling xG/D", "Average G/D", "Salary", 
+                          "Opponent Average xG Against", "Opponent Average xG/D", "Opponent Rolling xG Against", "Opponent Rolling xG/D", 
+                          "Opponent Average G/D", "Opponent Salary"]]
+
+
+    y = normalized_stats["xG For"]
+
+    x = x.copy()
+
+    x["Team Strength"] = x[["Average xG For", "Average xG/D", "Rolling xG For", "Rolling xG/D", "Average G/D", "Salary"]].apply(pd.to_numeric).mean(axis=1)
+    x["Opponent Team Strength"] = x[[ "Opponent Average xG Against", "Opponent Average xG/D", "Opponent Rolling xG Against", "Opponent Rolling xG/D", 
+                            "Opponent Average G/D", "Opponent Salary"]].apply(pd.to_numeric).mean(axis=1)
+
+    x = x[["Home?", "Days Rest", "Team Strength", "Opponent Team Strength"]].apply(pd.to_numeric)
+
+    return x,y
+
+
+
+
 df = load_and_prepare_match_data(r"data\2024_match_stats.csv")
 salaries = load_and_prepare_salary_data(r"data\prem_salaries.csv")
 normalized_stats = calculate_normalized_stats(df,salaries)
+x,y = engineer_features(normalized_stats)
