@@ -1,11 +1,10 @@
-from data_loader_v2 import normalized_stats
+from data_loader import normalized_stats
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 
 def predict_xG_for():
-    #model_df_clean = model_df.dropna(subset=["Avg xG", "Cumulative G/D", "rolling xG For", "Opponent rolling xG Against", "xG For", "Days Rest", "Opponent Avg xGA", "Home?"])
 
     x = normalized_stats[["Home?", "Days Rest", "Average xG For", "Average xG/D", "Rolling xG For", "Rolling xG/D", "Average G/D", "Salary", 
                           "Opponent Average xG Against", "Opponent Average xG/D", "Opponent Rolling xG Against", "Opponent Rolling xG/D", 
