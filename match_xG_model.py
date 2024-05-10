@@ -30,8 +30,7 @@ def corr_matrix(x):
     sns.heatmap(corr_matrix, annot=True, cmap="coolwarm")
     plt.show()
     
-
-    
+#TEST APPLYING LOG ONTO OUTCOME VARIABLES
 
 
 
