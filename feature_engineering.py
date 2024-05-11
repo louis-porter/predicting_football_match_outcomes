@@ -1,5 +1,7 @@
 from preprocessing import df
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 def normalise_home_away(df):
     # Separates out the home vs away and allows every team to have an individual row of data. Allows us to feature engineer home effect easier.
@@ -26,10 +28,45 @@ def normalise_home_away(df):
 
     return df
 
+def calculate_rolling_xg(df):
+    df.sort_values(by=["team", "match_date"], inplace=True)
+
+    def penalized_ema(x, column_name, span=35):
+        ema_values = pd.Series(index=x.index)
+        for season in x["season"].unique():
+            season_data = x[x["season"] == season]
+            initial_ema = None
+
+            # ema_values is empty (second season being processed) then it forward-fills to get last EMA from previous season
+            # applies penalty factor (0.75) reducing the weight of the last season's perfomance on current season EMA calc
+            if not ema_values.empty:
+                initial_ema = ema_values.ffill().iloc[-1] * 0.75
+
+            season_ema = season_data[column_name].ewm(span=span, adjust=False, min_periods=1).mean()
+
+            # if initial_ema was calculated from previous season then it blends the EMA from first game of current season
+            # this smooths transition between seasons.
+            if initial_ema is not None:
+                season_ema.iloc[0] = (season_ema.iloc[0] + initial_ema) / 2
+
+            ema_values.update(season_ema)
+
+        return ema_values
+
+    df["rolling_xG"] = df.groupby("team", group_keys=False).apply(lambda x: penalized_ema(x, 'xG', span=35))
+    df["rolling_xG_conceded"] = df.groupby("team", group_keys=False).apply(lambda x: penalized_ema(x, 'opponent_xG', span=35))
+
+    return df
+
 
 # TODO: Need to build exponential moving average features for all team metrics (consider league and season in weighting?)
 
 # TODO: Build a number of days rest feature (Make it be 0 when first game in new season)
 
 df = normalise_home_away(df)
+df = calculate_rolling_xg(df)
+df_arsenal = df[df["team"] == "Arsenal"]
+df_arsenal.sort_values(by="match_date", ascending=False, inplace=True)
+print(df_arsenal.head(50))
+
 
