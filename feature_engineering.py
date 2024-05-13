@@ -28,45 +28,57 @@ def normalise_home_away(df):
 
     return df
 
-def calculate_rolling_xg(df):
+def penalized_ema(group_df, column_name, span=35):
+    # Creates an exponential moving average that applies a penalty for games within span that are in previous seaoson
+    ema_values = pd.Series(index=group_df.index, dtype=float)
+    for season in group_df['season'].unique():
+        season_data = group_df[group_df['season'] == season]
+        season_ema = season_data[column_name].astype(float).ewm(span=span, adjust=False, min_periods=1).mean()
+        if not ema_values.dropna().empty: # if ema_values series already has data then use last value from prev season
+            initial_value = ema_values.ffill().iloc[-1] * 0.75
+            season_ema.iloc[0] = (season_ema.iloc[0] + initial_value) / 2
+        ema_values.update(season_ema)
+    return ema_values
+
+def calculate_team_rolling_means(df):
     df.sort_values(by=["team", "match_date"], inplace=True)
+    stat_columns = ['goals', 'xG', 'shots', 'deep', 'ppda']
 
-    def penalized_ema(x, column_name, span=35):
-        ema_values = pd.Series(index=x.index)
-        for season in x["season"].unique():
-            season_data = x[x["season"] == season]
-            initial_ema = None
+    # Compute EMAs for team stats
+    for col in stat_columns:
+        df[f"rolling_{col}"] = df.groupby("team").apply(lambda x: penalized_ema(x, col)).droplevel(0)
+        df[f"rolling_{col}_conceded"] = df.groupby("team").apply(lambda x: penalized_ema(x, f'opponent_{col}')).droplevel(0)
 
-            # ema_values is empty (second season being processed) then it forward-fills to get last EMA from previous season
-            # applies penalty factor (0.75) reducing the weight of the last season's perfomance on current season EMA calc
-            if not ema_values.empty:
-                initial_ema = ema_values.ffill().iloc[-1] * 0.75
+    df.reset_index(drop=True, inplace=True)
 
-            season_ema = season_data[column_name].ewm(span=span, adjust=False, min_periods=1).mean()
+    return df
 
-            # if initial_ema was calculated from previous season then it blends the EMA from first game of current season
-            # this smooths transition between seasons.
-            if initial_ema is not None:
-                season_ema.iloc[0] = (season_ema.iloc[0] + initial_ema) / 2
+def calculate_opponent_rolling_means(df):
+    df.sort_values(by=["opponent_team", "match_date"], inplace=True)
+    stat_columns = ['goals', 'xG', 'shots', 'deep', 'ppda']
 
-            ema_values.update(season_ema)
+    # Compute EMAs for opponent stats
+    for col in stat_columns:
+        df[f"opponent_rolling_{col}"] = df.groupby("opponent_team").apply(lambda x: penalized_ema(x, f'opponent_{col}')).droplevel(0)
+        df[f"opponent_rolling_{col}_conceded"] = df.groupby("opponent_team").apply(lambda x: penalized_ema(x, col)).droplevel(0)
 
-        return ema_values
+    df.reset_index(drop=True, inplace=True)
 
-    df["rolling_xG"] = df.groupby("team", group_keys=False).apply(lambda x: penalized_ema(x, 'xG', span=35))
-    df["rolling_xG_conceded"] = df.groupby("team", group_keys=False).apply(lambda x: penalized_ema(x, 'opponent_xG', span=35))
+    return df
+
+def calculate_days_rest(df):
+    df.sort_values(by=["match_date", "team"], inplace=True)
+    df["days_rest"] = df.groupby(["season", "team"], observed=True)["match_date"].diff().dt.days
+    df["days_rest"].fillna(0, inplace=True)
 
     return df
 
 
-# TODO: Need to build exponential moving average features for all team metrics (consider league and season in weighting?)
-
-# TODO: Build a number of days rest feature (Make it be 0 when first game in new season)
-
 df = normalise_home_away(df)
-df = calculate_rolling_xg(df)
-df_arsenal = df[df["team"] == "Arsenal"]
-df_arsenal.sort_values(by="match_date", ascending=False, inplace=True)
-print(df_arsenal.head(50))
+df = calculate_team_rolling_means(df)
+df = calculate_opponent_rolling_means(df)
+df = calculate_days_rest(df)
 
+
+df.to_csv("test.csv")
 
