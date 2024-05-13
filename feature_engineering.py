@@ -74,11 +74,22 @@ def calculate_days_rest(df):
     return df
 
 
-df = normalise_home_away(df)
-df = calculate_team_rolling_means(df)
-df = calculate_opponent_rolling_means(df)
-df = calculate_days_rest(df)
+def create_model_df(df):
+    df = normalise_home_away(df)
+    df = calculate_team_rolling_means(df)
+    df = calculate_opponent_rolling_means(df)
+    df = calculate_days_rest(df)
 
+    df = df[["division", "season", "team", "days_rest", "home?", "avg_market_value", "rolling_goals",
+             "rolling_goals_conceded", "rolling_xG", "rolling_xG_conceded", "rolling_shots", "rolling_shots_conceded",
+             "rolling_deep", "rolling_deep_conceded", "rolling_ppda", "rolling_ppda_conceded", 
+             "opponent_team", "opponent_avg_market_value", "opponent_rolling_goals", "opponent_rolling_goals_conceded", "opponent_rolling_xG",
+             "opponent_rolling_xG_conceded", "opponent_rolling_shots", "opponent_rolling_shots_conceded", "opponent_rolling_deep", "opponent_rolling_deep_conceded", 
+             "opponent_rolling_ppda", "opponent_rolling_ppda_conceded", "xG"]]
+    
+    return df
 
-df.to_csv("test.csv")
+    
+
+final_df = create_model_df(df)
 

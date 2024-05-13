@@ -23,10 +23,12 @@ def transform_columns(df):
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    #scaler = StandardScaler()
-    #df[numeric_cols] = scaler.fit_transform(df[numeric_cols]) 
+    scaler = StandardScaler()
+    df[numeric_cols] = scaler.fit_transform(df[numeric_cols]) 
 
     df["season"] = pd.to_numeric(df["season"].str[5:]) #converting season column to end year.
+
+
 
     return df
 
