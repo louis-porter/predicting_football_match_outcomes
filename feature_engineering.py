@@ -87,6 +87,8 @@ def create_model_df(df):
              "opponent_rolling_xG_conceded", "opponent_rolling_shots", "opponent_rolling_shots_conceded", "opponent_rolling_deep", "opponent_rolling_deep_conceded", 
              "opponent_rolling_ppda", "opponent_rolling_ppda_conceded", "xG"]]
     
+    df = df[df["division"] == "Ligue 1"]
+    
     return df
 
     

@@ -9,9 +9,14 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 def test_training_split(df):
-    X = df.drop(["division", "season", "team", "opponent_team", "xG"], axis=1)
+    X_full = df[["home?", "rolling_shots", "rolling_goals", "rolling_xG", "rolling_deep",
+            "opponent_rolling_shots_conceded", "opponent_rolling_xG_conceded","opponent_rolling_goals_conceded",
+            "opponent_rolling_deep_conceded", "avg_market_value", "opponent_avg_market_value"]]
+    
+    X = df[["rolling_xG", "opponent_rolling_xG_conceded", "avg_market_value", "opponent_avg_market_value", "home?",
+            "rolling_shots", "opponent_rolling_shots_conceded"]]
+
     y = df["xG"]
-    print(y.isna().sum())
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
@@ -38,13 +43,6 @@ def predict_xG_for(X_train,y_train, X_test, y_test):
     return X_train, y_train, model
 
 
-def corr_matrix(x):
-    corr_matrix = x.corr()
-    print(corr_matrix)
-
-
-    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm")
-    plt.show()
     
 #TEST APPLYING LOG ONTO OUTCOME VARIABLES
 
