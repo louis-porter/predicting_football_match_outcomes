@@ -63,12 +63,12 @@ def predict_xG_for(X_train,y_train, X_test, y_test, X_cv, y_cv):
     print(f"Training error: {mse_train_lasso}")
     print(f"CV error: {mse_cv_lasso}")
 
-    # r_sq = model.score(X_test,y_test)
+    r_sq = model.score(X_test,y_test)
     # mse = mean_squared_error(y_test, y_pred)
     # mae = mean_absolute_error(y_test, y_pred)
     # rmse = np.sqrt(mse)
 
-    # print(f"Coefficient of determination: {r_sq}")
+    print(f"Coefficient of determination: {r_sq}")
     # print(f"MSE: {mse}")
     # print(f"MAE: {mae}")
     # print(f"RMSE: {rmse}")
