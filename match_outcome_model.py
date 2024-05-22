@@ -49,5 +49,5 @@ def test_simulation(n=10000):
     print(results)
     
 
-home_win, draw, away_win = calculate_match_outcome_prob(2.08, 0.75)
-print(simulate_match(home_win, draw, away_win))
+home_win, draw, away_win = calculate_match_outcome_prob(1.36, 1.5)
+
